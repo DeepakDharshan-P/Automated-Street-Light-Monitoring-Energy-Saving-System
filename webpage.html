@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Street Light Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
+  header { background: #2c3e50; color: white; text-align: center; padding: 20px; }
+  h1 { margin: 0; }
+  .container { display: flex; flex-wrap: wrap; justify-content: center; padding: 20px; }
+  .light-card {
+    background: white; width: 220px; margin: 10px; padding: 15px; border-radius: 10px; 
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2); text-align: center;
+  }
+  .light-status { font-size: 1.2rem; margin: 10px 0; }
+  .on { color: green; }
+  .off { color: red; }
+  button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; }
+  button.toggle { background: #3498db; color: white; margin-bottom: 5px; }
+  .chart-container { max-width: 900px; margin: 30px auto; background:white; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.2);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Smart Street Light Dashboard</h1>
+  <p>Real-Time Monitoring & Energy Analytics</p>
+</header>
+
+<div class="container" id="lightsContainer"></div>
+
+<div class="chart-container">
+  <canvas id="energyChart"></canvas>
+</div>
+
+<script>
+// Mock street light data
+let streetLights = [
+  { id: 1, name: "Light 1", status: "ON", brightness: 80, energy: 5 },
+  { id: 2, name: "Light 2", status: "OFF", brightness: 0, energy: 2 },
+  { id: 3, name: "Light 3", status: "ON", brightness: 70, energy: 4 },
+  { id: 4, name: "Light 4", status: "OFF", brightness: 0, energy: 1 },
+];
+
+// Render street lights
+function renderLights() {
+  const container = document.getElementById('lightsContainer');
+  container.innerHTML = '';
+  streetLights.forEach(light => {
+    const card = document.createElement('div');
+    card.className = 'light-card';
+    card.innerHTML = `
+      <h3>${light.name}</h3>
+      <div class="light-status ${light.status.toLowerCase()}">Status: ${light.status}</div>
+      <div>Brightness: ${light.brightness}%</div>
+      <div>Energy Consumed: ${light.energy} kWh</div>
+      <button class="toggle" onclick="toggleLight(${light.id})">Toggle</button>
+    `;
+    container.appendChild(card);
+  });
+  updateChart();
+}
+
+// Toggle light
+function toggleLight(id) {
+  streetLights = streetLights.map(light => {
+    if(light.id === id){
+      if(light.status === 'ON'){
+        light.status = 'OFF';
+        light.brightness = 0;
+      } else {
+        light.status = 'ON';
+        light.brightness = Math.floor(Math.random() * 50 + 50); // random brightness
+      }
+      light.energy = Math.floor(Math.random() * 6); // random energy consumption
+    }
+    return light;
+  });
+  renderLights();
+}
+
+// Chart.js energy chart
+const ctx = document.getElementById('energyChart').getContext('2d');
+let energyChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: streetLights.map(l => l.name),
+    datasets: [{
+      label: 'Energy Consumption (kWh)',
+      data: streetLights.map(l => l.energy),
+      backgroundColor: 'rgba(52, 152, 219, 0.7)'
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: { y: { beginAtZero: true } }
+  }
+});
+
+// Update chart
+function updateChart(){
+  energyChart.data.datasets[0].data = streetLights.map(l => l.energy);
+  energyChart.update();
+}
+
+// Auto update mock data every 5 sec
+setInterval(() => {
+  streetLights.forEach(light => {
+    if(Math.random() < 0.4){
+      light.status = (light.status === 'ON' ? 'OFF' : 'ON');
+      light.brightness = light.status==='ON' ? Math.floor(Math.random()*50+50) : 0;
+      light.energy = Math.floor(Math.random()*6);
+    }
+  });
+  renderLights();
+}, 5000);
+
+renderLights();
+</script>
+
+</body>
+</html>
